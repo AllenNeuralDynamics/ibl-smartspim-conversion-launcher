@@ -14,7 +14,8 @@ import logging
 import pandas as pd
 import streamlit as st
 import streamlit.logger
-from aind_session.extensions.smartspim_neuropixels import (
+
+from extension import (
     IBLDataConverterExtension,
     NeuroglancerExtension,
     NeuroglancerState,
@@ -27,12 +28,12 @@ logger = streamlit.logger.get_logger(__name__)
 
 def get_existing_json_paths():
     paths = sorted(
-        NeuroglancerExtension.storage_dir.glob("*.json"),
+        NeuroglancerExtension.state_json_dir.rglob("*.json"),
         key=lambda p: "_".join(p.stem.split("_")[-2:]),
         reverse=True,
     )
     logger.info(
-        f"Found {len(paths)} existing json files in {NeuroglancerExtension.storage_dir}"
+        f"Found {len(paths)} existing json files in {NeuroglancerExtension.state_json_dir}"
     )
     return paths
 
@@ -115,6 +116,7 @@ if st.session_state["ng_path"] is not None:
         get_sorted_asset_df(),
         num_rows="dynamic",
         hide_index=True,
+        disabled=["name", "probes", "sorter", "is_analyzer", "is_error", "id"],
     )
 
     def get_manifest_df() -> pd.DataFrame:
@@ -168,5 +170,6 @@ if st.session_state["ng_path"] is not None:
         capsule_id = ibl_data_converter.DATA_CONVERTER_CAPSULE_ID
         computation = ibl_data_converter.run_data_converter_capsule(
             capsule_id=capsule_id,
+            additional_assets=[asset],
         )
         st.success(f"Launched data converter capsule {capsule_id!r}")
