@@ -670,10 +670,18 @@ class IBLDataConverterExtension(aind_session.ExtensionBaseClass):
             manifest_asset = aind_session.utils.codeocean_utils.get_data_asset_model(
                 manifest_asset
             )
+        else:
+            manifest_asset = self.manifest_data_asset
+        logger.info(f"Using manifest asset {manifest_asset.name}")
+        
         if neuroglancer_state_json_asset is not None:
             neuroglancer_state_json_asset = aind_session.utils.codeocean_utils.get_data_asset_model(
                 neuroglancer_state_json_asset
             )
+        else:
+            neuroglancer_state_json_asset = self.neuroglancer_state_json_asset
+        logger.info(f"Using Neuroglancer state json asset {neuroglancer_state_json_asset.name}")
+        
         run_params = codeocean.computation.RunParams(
             capsule_id=capsule_id,
             data_assets=[
@@ -682,13 +690,16 @@ class IBLDataConverterExtension(aind_session.ExtensionBaseClass):
                     *self.ecephys_data_assets,
                     *self.sorted_data_assets,
                     *self.smartspim_data_assets,
-                    (manifest_asset or self.manifest_data_asset),
-                    (neuroglancer_state_json_asset or self.neuroglancer_state_json_asset),
+                    manifest_asset,
+                    neuroglancer_state_json_asset,
                     *additional_assets,
                 )
             ],
             parameters=parameters or [],
-            named_parameters=named_parameters or [],
+            named_parameters=named_parameters or [
+                codeocean.computation.NamedRunParam(param_value='manifest', value=f"{manifest_asset.name}.csv"),
+                codeocean.computation.NamedRunParam(param_value='neuroglancer', value=f"{neuroglancer_state_json_asset.name}.json"),
+            ],
         )
         logger.debug(f"Running data converter capsule: {run_params.capsule_id}")
         return aind_session.utils.codeocean_utils.get_codeocean_client().computations.run_capsule(

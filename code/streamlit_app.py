@@ -151,7 +151,7 @@ if st.session_state["ng_path"] is not None:
             ),
             "probe_file": st.column_config.TextColumn(width="large"),
             "probe_id": st.column_config.TextColumn(width="small"),
-            "surface_finding": st.column_config.NumberColumn(width="small"),
+            "surface_finding": st.column_config.TextColumn(width="large"),
             "annotation_format": st.column_config.SelectboxColumn(
                 options=["json", "swc"]
             ),
