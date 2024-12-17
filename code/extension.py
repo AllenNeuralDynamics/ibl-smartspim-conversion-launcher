@@ -263,8 +263,9 @@ class IBLDataConverterExtension(aind_session.ExtensionBaseClass):
         self.use_data_assets_with_errors = False
         self.use_data_assets_with_sorting_analyzer = True
 
-    DATA_CONVERTER_CAPSULE_ID = "372263e6-d942-4241-ba71-763a1062f2b7"  #! test capsule
-    # TODO switch to actual capsule: "d4ba01c4-5665-4163-95d2-e481f4465b86"
+    DATA_CONVERTER_CAPSULE_ID = "372263e6-d942-4241-ba71-763a1062f2b7"
+    # actual capsule: "9fe42995-ffff-40ff-9c4c-c8206b8aacb5"
+    # test capsule: "372263e6-d942-4241-ba71-763a1062f2b7"
     """https://codeocean.allenneuraldynamics.org/capsule/1376129/tree"""
 
     @property
@@ -697,8 +698,8 @@ class IBLDataConverterExtension(aind_session.ExtensionBaseClass):
             ],
             parameters=parameters or [],
             named_parameters=named_parameters or [
-                codeocean.computation.NamedRunParam(param_value='manifest', value=f"{manifest_asset.name}.csv"),
-                codeocean.computation.NamedRunParam(param_value='neuroglancer', value=f"{neuroglancer_state_json_asset.name}.json"),
+                codeocean.computation.NamedRunParam(param_name='manifest', value=f"{manifest_asset.name}/{manifest_asset.name}.csv"),
+                codeocean.computation.NamedRunParam(param_name='neuroglancer', value=f"{neuroglancer_state_json_asset.name}/{neuroglancer_state_json_asset.name}.json"),
             ],
         )
         logger.debug(f"Running data converter capsule: {run_params.capsule_id}")

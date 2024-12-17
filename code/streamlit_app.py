@@ -170,6 +170,5 @@ if st.session_state["ng_path"] is not None:
         capsule_id = ibl_data_converter.DATA_CONVERTER_CAPSULE_ID
         computation = ibl_data_converter.run_data_converter_capsule(
             capsule_id=capsule_id,
-            additional_assets=[asset],
         )
         st.success(f"Launched data converter capsule {capsule_id!r}")
