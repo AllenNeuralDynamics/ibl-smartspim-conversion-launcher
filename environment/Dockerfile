@@ -1,4 +1,4 @@
-# hash:sha256:4479fb6a66e2e38f9e95e87b6184931d8980748019398f72ed851e03cc0f4255
+# hash:sha256:42d76c30f1d6bb3e71799d002affe6d8b7e62502c55d476f637f307353d85cf1
 ARG REGISTRY_HOST
 FROM $REGISTRY_HOST/codeocean/mambaforge3:23.1.0-4-python3.10.12-ubuntu22.04
 
@@ -14,6 +14,7 @@ ARG GIT_ACCESS_TOKEN
 COPY git-askpass /
 
 RUN pip3 install -U --no-cache-dir \
+    aind-codeocean-pipeline-monitor==0.5.2 \
     aind-session==0.3.12 \
     pandas==2.2.3 \
     panel==1.5.4 \

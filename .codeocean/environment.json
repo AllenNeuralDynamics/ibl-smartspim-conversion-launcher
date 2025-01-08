@@ -16,6 +16,10 @@
 		"pip3": {
 			"packages": [
 				{
+					"name": "aind-codeocean-pipeline-monitor",
+					"version": "0.5.2"
+				},
+				{
 					"name": "aind-session",
 					"version": "0.3.12"
 				},

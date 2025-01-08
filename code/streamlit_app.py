@@ -25,6 +25,8 @@ logging.basicConfig(level=logging.INFO)
 
 logger = streamlit.logger.get_logger(__name__)
 
+st.set_page_config(layout="wide")
+
 
 def get_existing_json_paths():
     paths = sorted(
@@ -150,6 +152,10 @@ if st.session_state["ng_path"] is not None:
                 },
             ),
             "probe_file": st.column_config.TextColumn(width="large"),
+            "probe_shank": st.column_config..SelectboxColumn(
+                width="small",
+                options=list(range(0, 4)),
+            ),
             "probe_id": st.column_config.TextColumn(width="small"),
             "surface_finding": st.column_config.TextColumn(width="large"),
             "annotation_format": st.column_config.SelectboxColumn(
@@ -157,18 +163,23 @@ if st.session_state["ng_path"] is not None:
             ),
         },
     )
-
+    capsule_id = st.text_input(
+        "Data Converter capsule ID",
+        value=ibl_data_converter.DATA_CONVERTER_CAPSULE_ID,
+    )
     if st.button("Launch data converter", type="primary"):
+        logger.info("Creating new Neuroglancer state data asset")
+        neuroglancer_state_json_asset = state.create_data_asset(path=st.session_state["ng_path"])
 
-        asset = ibl_data_converter.create_manifest_asset(
+        manifest_asset = ibl_data_converter.create_manifest_asset(
             manifest_df.to_dict(orient="records"),
             skip_existing=False,
             timeout_sec=30,
         )
-        assert asset.id == ibl_data_converter.manifest_data_asset.id
-
-        capsule_id = ibl_data_converter.DATA_CONVERTER_CAPSULE_ID
         computation = ibl_data_converter.run_data_converter_capsule(
             capsule_id=capsule_id,
+            manifest_asset=manifest_asset,
+            neuroglancer_state_json_asset=neuroglancer_state_json_asset,
+            pipeline_monitor_capsule_id='bd5f10ce-0f3e-4805-95f1-7a42c9427c23',
         )
         st.success(f"Launched data converter capsule {capsule_id!r}")
