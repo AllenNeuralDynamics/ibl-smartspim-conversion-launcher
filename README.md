@@ -5,7 +5,7 @@ A Streamlit app for gathering assets and mapping probe tracks in Neuroglancer to
 Credentials first need to be added to **two capsules**: this one, and a "monitor" capsule that handles data asset creation:
 
 - when the `launch data converter` button is pressed at the end of the Streamlit app, a request is made via the CodeOcean API to a "monitor" capsule
-- the monitor capsule starts the data converter capsule (forwarding the run parameters sent from the Streamlit app)
+- the monitor capsule starts the data cpnversion capsule (forwarding the run parameters sent from the Streamlit app)
 - the monitor capsule waits for data conversion to finish (up to 3 hours) then creates a data asset from the results 
 - this way, the Streamlit app can be closed or used to launch conversion for another session
 
