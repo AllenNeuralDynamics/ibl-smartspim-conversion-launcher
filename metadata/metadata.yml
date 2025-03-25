@@ -1,4 +1,7 @@
 metadata_version: 1
 name: ibl-smartspim-conversion-launcher
+description: A Streamlit app for gathering assets and mapping probe tracks in Neuroglancer
+  to probe recordings in Open Ephys. The app then launches a data conversion capsule
+  and creates a data asset required to use the IBL annotation app.
 authors:
 - name: Ben Hardcastle
