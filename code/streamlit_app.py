@@ -152,7 +152,7 @@ if st.session_state["ng_path"] is not None:
                 },
             ),
             "probe_file": st.column_config.TextColumn(width="large"),
-            "probe_shank": st.column_config..SelectboxColumn(
+            "probe_shank": st.column_config.SelectboxColumn(
                 width="small",
                 options=list(range(0, 4)),
             ),
@@ -180,6 +180,5 @@ if st.session_state["ng_path"] is not None:
             capsule_id=capsule_id,
             manifest_asset=manifest_asset,
             neuroglancer_state_json_asset=neuroglancer_state_json_asset,
-            pipeline_monitor_capsule_id='bd5f10ce-0f3e-4805-95f1-7a42c9427c23',
         )
         st.success(f"Launched data converter capsule {capsule_id!r}")

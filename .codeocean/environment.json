@@ -24,6 +24,10 @@
 					"version": "0.3.12"
 				},
 				{
+					"name": "codeocean",
+					"version": "0.3.0"
+				},
+				{
 					"name": "pandas",
 					"version": "2.2.3"
 				},
