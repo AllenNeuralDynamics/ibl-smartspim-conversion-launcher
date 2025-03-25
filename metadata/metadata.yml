@@ -1,2 +1,4 @@
 metadata_version: 1
 name: ibl-smartspim-conversion-launcher
+authors:
+- name: Ben Hardcastle
