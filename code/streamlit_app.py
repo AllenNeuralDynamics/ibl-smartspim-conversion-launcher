@@ -61,7 +61,6 @@ def update_ng_state(source: str) -> None:
     else:
         raise ValueError(f"Invalid source: {source}")
 
-
 st.title("Get Neuroglancer state json")
 ng_path = st.selectbox(
     "Use an existing file:",
@@ -138,31 +137,66 @@ if st.session_state["ng_path"] is not None:
     st.info(
         "Fill out the `probe_name` column with names from Open Ephys and remove any unwanted rows"
     )
-    manifest_df = st.data_editor(
-        get_manifest_df(),
-        num_rows="dynamic",
-        hide_index=True,
-        column_config={
-            "mouseid": st.column_config.TextColumn(width="small"),
-            "sorted_recording": st.column_config.TextColumn(width="large"),
-            "probe_name": st.column_config.SelectboxColumn(
-                width="small",
-                options={
-                    probe for sublist in sorted_asset_df["probes"] for probe in sublist
-                },
-            ),
-            "probe_file": st.column_config.TextColumn(width="large"),
-            "probe_shank": st.column_config.SelectboxColumn(
-                width="small",
-                options=list(range(0, 4)),
-            ),
-            "probe_id": st.column_config.TextColumn(width="small"),
-            "surface_finding": st.column_config.TextColumn(width="large"),
-            "annotation_format": st.column_config.SelectboxColumn(
-                options=["json", "swc"]
-            ),
-        },
-    )
+    uploaded_file = st.file_uploader("Upload manifest CSV file", type="csv")
+    manifest_from_file = None
+    if uploaded_file:
+        manifest_from_file = pd.read_csv(uploaded_file)
+        manifest_from_file["mouseid"] = manifest_from_file["mouseid"].astype(str)
+        manifest_from_file["surface_finding"] = manifest_from_file["surface_finding"].astype(str)
+        st.success("CSV Loaded Successfully!")
+
+    def get_manifest_editor(manifest_df: pd.DataFrame) -> st.data_editor:
+        """
+        Display and return an editable manifest DataFrame using Streamlit's data editor.
+
+        This function renders a data editor interface for a manifest DataFrame,
+        allowing the user to interactively edit rows and columns.
+
+        Parameters
+        ----------
+        manifest_df : pd.DataFrame
+            The manifest dataframe either made from uploaded file or automatically generated
+
+        Returns
+        -------
+        st.data_editor
+        The updated DataFrame returned from the Streamlit data editor widget.
+        """
+
+        manifest_df_editor = st.data_editor(
+            manifest_df,
+            num_rows="dynamic",
+            hide_index=True,
+            column_config={
+                "mouseid": st.column_config.TextColumn(width="small"),
+                "sorted_recording": st.column_config.TextColumn(width="large"),
+                "probe_name": st.column_config.SelectboxColumn(
+                    width="small",
+                    options={
+                        probe for sublist in sorted_asset_df["probes"] for probe in sublist
+                    },
+                ),
+                "probe_file": st.column_config.TextColumn(width="large"),
+                "probe_shank": st.column_config.SelectboxColumn(
+                    width="small",
+                    options=list(range(0, 4)),
+                ),
+                "probe_id": st.column_config.TextColumn(width="small"),
+                "surface_finding": st.column_config.TextColumn(width="large"),
+                "annotation_format": st.column_config.SelectboxColumn(
+                    options=["json", "swc"]
+                ),
+            },
+        )
+        return manifest_df_editor
+    
+    st.title("Manifest automatically generated")
+    manifest_df = get_manifest_editor(get_manifest_df())
+
+    if manifest_from_file is not None:
+        st.title("Manifest from user uploaded csv")
+        manifest_df = get_manifest_editor(manifest_from_file)
+    
     capsule_id = st.text_input(
         "Data Converter capsule ID",
         value=ibl_data_converter.DATA_CONVERTER_CAPSULE_ID,
