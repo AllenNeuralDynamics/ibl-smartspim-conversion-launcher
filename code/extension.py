@@ -285,8 +285,8 @@ class IBLDataConverterExtension(aind_session.ExtensionBaseClass):
         self.use_data_assets_with_errors = False
         self.use_data_assets_with_sorting_analyzer = True
 
-    DATA_CONVERTER_CAPSULE_ID = "9fe42995-ffff-40ff-9c4c-c8206b8aacb5"
-    """https://codeocean.allenneuraldynamics.org/capsule/8363069/tree"""
+    DATA_CONVERTER_CAPSULE_ID = "cde74c83-7f4d-4969-b87e-d4a82a525e6c"
+    """https://codeocean.allenneuraldynamics.org/capsule/0325751/tree"""
 
     PIPELINE_MONITOR_CAPUSLE_ID = "567b5b98-8d41-413b-9375-9ca610ca2fd3"
     """Pipeline monitor capsule for capturing data assets e.g. https://codeocean.allenneuraldynamics.org/capsule/9889491/tree"""
@@ -302,7 +302,7 @@ class IBLDataConverterExtension(aind_session.ExtensionBaseClass):
         'ecephys_717381_2024-04-09_11-14-13'
         """
         return tuple(
-            session for session in self._base.sessions if session.platform == "ecephys"
+            session for session in self._base.sessions if "ecephys" in session.modalities
         )
 
     @property
@@ -399,7 +399,7 @@ class IBLDataConverterExtension(aind_session.ExtensionBaseClass):
         future_to_session: dict[concurrent.futures.Future, aind_session.Session] = {}
         with concurrent.futures.ThreadPoolExecutor() as executor:
             for session in self._base.sessions:
-                if session.platform != "ecephys":
+                if "ecephys" not in session.modalities:
                     continue
                 future = executor.submit(get_session_assets, session)
                 future_to_session[future] = session
