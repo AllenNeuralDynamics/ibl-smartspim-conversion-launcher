@@ -285,8 +285,10 @@ class IBLDataConverterExtension(aind_session.ExtensionBaseClass):
         self.use_data_assets_with_errors = False
         self.use_data_assets_with_sorting_analyzer = True
 
-    DATA_CONVERTER_CAPSULE_ID = "cde74c83-7f4d-4969-b87e-d4a82a525e6c"
-    """https://codeocean.allenneuraldynamics.org/capsule/0325751/tree"""
+    # DATA_CONVERTER_CAPSULE_ID = "cde74c83-7f4d-4969-b87e-d4a82a525e6c"
+    # """https://codeocean.allenneuraldynamics.org/capsule/0325751/tree"""
+    DATA_CONVERTER_CAPSULE_ID = "db920580-0526-4dd0-9821-844221af1f75"
+    """https://codeocean.allenneuraldynamics.org/capsule/6502580/tree"""
 
     PIPELINE_MONITOR_CAPUSLE_ID = "567b5b98-8d41-413b-9375-9ca610ca2fd3"
     """Pipeline monitor capsule for capturing data assets e.g. https://codeocean.allenneuraldynamics.org/capsule/9889491/tree"""
@@ -505,6 +507,22 @@ class IBLDataConverterExtension(aind_session.ExtensionBaseClass):
             results[name] = {key: str(result.group(key)) for key in ("probe", "day")}
         return results  # type: ignore[return-value]
 
+    @staticmethod
+    def get_probe_mmdd_from_ng_state(
+        neuroglancer_state: NeuroglancerState,
+    ) -> dict[str, dict[Literal["probe", "mmdd"], str]]:
+        # extract probe A-F and mmdd (month+day) from annotation names of the form "A_1107",
+        # where mmdd matches the date component of a sorted data asset name;
+        # optional suffixes after the 4-digit mmdd are ignored
+        pattern = r"(?P<probe>[A-F])[-_ ]*(?P<mmdd>\d{4})(?!\d)"
+        results = {}
+        for name in neuroglancer_state.annotation_names:
+            result = re.search(pattern, name)
+            if result is None:
+                continue
+            results[name] = {key: result.group(key) for key in ("probe", "mmdd")}
+        return results  # type: ignore[return-value]
+
     def get_partial_manifest_records(
         self,
         neuroglancer_state_json_name: str | None = None,
@@ -554,31 +572,44 @@ class IBLDataConverterExtension(aind_session.ExtensionBaseClass):
 
         records = []
 
-        if not any(self.get_mindscope_probe_day_from_ng_state(neuroglancer_state)):
-            for annotation_name in neuroglancer_state.annotation_names:
-                for sorted_data_asset_name in sorted_data_asset_names:
-                    row = IBLDataConverterExtension.ManifestRecord(
-                        mouseid=self._base.id,
-                        probe_name="",
-                        probe_id=annotation_name,
-                        sorted_recording=sorted_data_asset_name,
-                        probe_file=neuroglancer_state_json_name,
-                        surface_finding=self.surface_recording_names.get(
-                            sorted_data_asset_name.split("_sorted")[0]
-                        ),
+        ng_probe_mmdd = self.get_probe_mmdd_from_ng_state(neuroglancer_state)
+        ng_probe_day = self.get_mindscope_probe_day_from_ng_state(neuroglancer_state)
+
+        if ng_probe_mmdd:
+            for ng_annotation, mmdd_info in ng_probe_mmdd.items():
+                mmdd = mmdd_info["mmdd"]
+                sorted_asset_name = next(
+                    (
+                        n
+                        for n in sorted_data_asset_names
+                        if (m := re.search(r"_\d{4}-(\d{2})-(\d{2})_", n))
+                        and m.group(1) + m.group(2) == mmdd
+                    ),
+                    None,
+                )
+                if sorted_asset_name is None:
+                    raise ValueError(
+                        f"No sorted asset found matching date {mmdd!r} (from annotation {ng_annotation!r})"
                     )
-                    records.append(row)
-        else:
-            ng_to_probe_day = self.get_mindscope_probe_day_from_ng_state(
-                neuroglancer_state
-            )
-            days = sorted({int(v["day"]) for v in ng_to_probe_day.values()})
+                row = IBLDataConverterExtension.ManifestRecord(
+                    mouseid=self._base.id,
+                    probe_name=f"Probe{mmdd_info['probe']}",
+                    probe_id=ng_annotation,
+                    sorted_recording=sorted_asset_name,
+                    probe_file=neuroglancer_state_json_name,
+                    surface_finding=self.surface_recording_names.get(
+                        sorted_asset_name.split("_sorted")[0]
+                    ),
+                )
+                records.append(row)
+        elif ng_probe_day:
+            days = sorted({int(v["day"]) for v in ng_probe_day.values()})
             ephys_sessions = sorted({asset.name for asset in self.ecephys_data_assets})
             for i, ephys_session in enumerate(ephys_sessions):
                 day = i + 1
                 if day not in days:
                     continue
-                for ng_annotation, probe_day in ng_to_probe_day.items():
+                for ng_annotation, probe_day in ng_probe_day.items():
                     if int(probe_day["day"]) == day:
                         sorted_asset_name = next(
                             (
@@ -603,6 +634,20 @@ class IBLDataConverterExtension(aind_session.ExtensionBaseClass):
                             ),
                         )
                         records.append(row)
+        else:
+            for annotation_name in neuroglancer_state.annotation_names:
+                for sorted_data_asset_name in sorted_data_asset_names:
+                    row = IBLDataConverterExtension.ManifestRecord(
+                        mouseid=self._base.id,
+                        probe_name="",
+                        probe_id=annotation_name,
+                        sorted_recording=sorted_data_asset_name,
+                        probe_file=neuroglancer_state_json_name,
+                        surface_finding=self.surface_recording_names.get(
+                            sorted_data_asset_name.split("_sorted")[0]
+                        ),
+                    )
+                    records.append(row)
         return list(dataclasses.asdict(record) for record in records)
 
     @property
