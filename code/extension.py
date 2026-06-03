@@ -285,9 +285,7 @@ class IBLDataConverterExtension(aind_session.ExtensionBaseClass):
         self.use_data_assets_with_errors = False
         self.use_data_assets_with_sorting_analyzer = True
 
-    # DATA_CONVERTER_CAPSULE_ID = "cde74c83-7f4d-4969-b87e-d4a82a525e6c"
-    # """https://codeocean.allenneuraldynamics.org/capsule/0325751/tree"""
-    DATA_CONVERTER_CAPSULE_ID = "db920580-0526-4dd0-9821-844221af1f75"
+    DATA_CONVERTER_CAPSULE_ID = "60569c31-be2d-4ccd-b60b-ab247824ec7c" # released version (uses latest version)
     """https://codeocean.allenneuraldynamics.org/capsule/6502580/tree"""
 
     PIPELINE_MONITOR_CAPUSLE_ID = "567b5b98-8d41-413b-9375-9ca610ca2fd3"
