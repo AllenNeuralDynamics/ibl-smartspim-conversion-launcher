@@ -607,7 +607,7 @@ class IBLDataConverterExtension(aind_session.ExtensionBaseClass):
                 )
                 if sorted_asset_name is None:
                     raise ValueError(
-                        f"No sorted asset found matching date {mmdd!r} (from annotation {ng_annotation!r})"
+                        f"No sorted asset found matching date {mmdd!r} (from annotation {ng_annotation!r}). Archive the annotation in neuroglancer if it should be ignored. "
                     )
                 row = IBLDataConverterExtension.ManifestRecord(
                     mouseid=self._base.id,
@@ -639,7 +639,7 @@ class IBLDataConverterExtension(aind_session.ExtensionBaseClass):
                         )
                         if sorted_asset_name is None:
                             raise ValueError(
-                                f"No sorted asset found for {ephys_session} (day {day})"
+                                f"No sorted asset found for {ephys_session} (day {day}). Archive the annotation in neuroglancer if it should be ignored."
                             )
                         row = IBLDataConverterExtension.ManifestRecord(
                             mouseid=self._base.id,
