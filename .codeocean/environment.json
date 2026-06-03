@@ -1,16 +1,10 @@
 {
 	"version": 1,
 	"base_image": "codeocean/mambaforge3:23.1.0-4-python3.10.12-ubuntu22.04",
-	"args": [
-		"API_KEY",
-		"API_SECRET",
-		"AWS_ACCESS_KEY_ID",
-		"AWS_DEFAULT_REGION",
-		"AWS_SECRET_ACCESS_KEY"
-	],
 	"options": {
 		"registry_host_arg": true,
-		"git_ask_pass": true
+		"git_ask_pass": true,
+		"mount_secrets": true
 	},
 	"installers": {
 		"pip3": {
@@ -20,12 +14,10 @@
 					"version": "0.5.2"
 				},
 				{
-					"name": "aind-session",
-					"version": "0.3.16"
+					"name": "aind-session"
 				},
 				{
-					"name": "codeocean",
-					"version": "0.3.0"
+					"name": "codeocean"
 				},
 				{
 					"name": "pandas",
