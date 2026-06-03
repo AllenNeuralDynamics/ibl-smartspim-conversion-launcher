@@ -14,10 +14,12 @@
 					"version": "0.5.2"
 				},
 				{
-					"name": "aind-session"
+					"name": "aind-session",
+					"version": "0.3.22"
 				},
 				{
-					"name": "codeocean"
+					"name": "codeocean",
+					"version": "0.12.0"
 				},
 				{
 					"name": "pandas",
