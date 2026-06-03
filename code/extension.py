@@ -865,6 +865,7 @@ class IBLDataConverterExtension(aind_session.ExtensionBaseClass):
     def run_data_converter_capsule(
         self,
         capsule_id: str = DATA_CONVERTER_CAPSULE_ID,
+        version: int | None = None,
         manifest_asset: str | codeocean.data_asset.DataAsset | None = None,
         neuroglancer_state_json_asset: (
             str | codeocean.data_asset.DataAsset | None
@@ -971,6 +972,7 @@ class IBLDataConverterExtension(aind_session.ExtensionBaseClass):
         if not pipeline_monitor_capsule_id:
             run_params = codeocean.computation.RunParams(
                 capsule_id=capsule_id,
+                version=version,
                 data_assets=data_assets,
                 named_parameters=named_parameters,
             )
@@ -980,6 +982,7 @@ class IBLDataConverterExtension(aind_session.ExtensionBaseClass):
             pipeline_monitor_settings = aind_codeocean_pipeline_monitor.models.PipelineMonitorSettings(
                 run_params=codeocean.computation.RunParams(
                     capsule_id=capsule_id,
+                    version=version,
                     data_assets=data_assets,
                     named_parameters=named_parameters,
                 ),

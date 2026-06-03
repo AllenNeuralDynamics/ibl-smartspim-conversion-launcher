@@ -167,6 +167,13 @@ if st.session_state["ng_path"] is not None:
         "Data Converter capsule ID",
         value=ibl_data_converter.DATA_CONVERTER_CAPSULE_ID,
     )
+    capsule_version = st.number_input(
+        "Data Converter capsule release version",
+        min_value=1,
+        value=1,
+        step=1,
+        placeholder="None",
+    )
     if st.button("Launch data converter", type="primary"):
         logger.info("Creating new Neuroglancer state data asset")
         neuroglancer_state_json_asset = state.create_data_asset(path=st.session_state["ng_path"])
@@ -178,6 +185,7 @@ if st.session_state["ng_path"] is not None:
         )
         computation = ibl_data_converter.run_data_converter_capsule(
             capsule_id=capsule_id,
+            version=capsule_version,
             manifest_asset=manifest_asset,
             neuroglancer_state_json_asset=neuroglancer_state_json_asset,
         )
