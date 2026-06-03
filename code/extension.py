@@ -621,35 +621,35 @@ class IBLDataConverterExtension(aind_session.ExtensionBaseClass):
         elif ng_probe_day:
             days = sorted({int(v["day"]) for v in ng_probe_day.values()})
             ephys_sessions = sorted({asset.name for asset in self.ecephys_data_assets})
-            for i, ephys_session in enumerate(ephys_sessions):
-                day = i + 1
+            for day, ephys_session in enumerate(ephys_sessions, start=1):
                 if day not in days:
                     continue
                 for ng_annotation, probe_day in ng_probe_day.items():
-                    if int(probe_day["day"]) == day:
-                        sorted_asset_name = next(
-                            (
-                                n
-                                for n in sorted_data_asset_names
-                                if n.startswith(ephys_session)
-                            ),
-                            None,
+                    if int(probe_day["day"]) != day:
+                        continue
+                    sorted_asset_name = next(
+                        (
+                            n
+                            for n in sorted_data_asset_names
+                            if n.startswith(ephys_session)
+                        ),
+                        None,
+                    )
+                    if sorted_asset_name is None:
+                        raise ValueError(
+                            f"No sorted asset found for {ephys_session} (day {day}). Archive the annotation in neuroglancer if it should be ignored."
                         )
-                        if sorted_asset_name is None:
-                            raise ValueError(
-                                f"No sorted asset found for {ephys_session} (day {day}). Archive the annotation in neuroglancer if it should be ignored."
-                            )
-                        row = IBLDataConverterExtension.ManifestRecord(
-                            mouseid=self._base.id,
-                            probe_name=f"Probe{probe_day['probe']}",
-                            probe_id=ng_annotation,
-                            sorted_recording=sorted_asset_name,
-                            probe_file=neuroglancer_state_json_name,
-                            surface_finding=self.surface_recording_names.get(
-                                sorted_asset_name.split("_sorted")[0]
-                            ),
-                        )
-                        records.append(row)
+                    row = IBLDataConverterExtension.ManifestRecord(
+                        mouseid=self._base.id,
+                        probe_name=f"Probe{probe_day['probe']}",
+                        probe_id=ng_annotation,
+                        sorted_recording=sorted_asset_name,
+                        probe_file=neuroglancer_state_json_name,
+                        surface_finding=self.surface_recording_names.get(
+                            sorted_asset_name.split("_sorted")[0]
+                        ),
+                    )
+                    records.append(row)
         else:
             for annotation_name in neuroglancer_state.annotation_names:
                 for sorted_data_asset_name in sorted_data_asset_names:
