@@ -539,6 +539,62 @@ class IBLDataConverterExtension(aind_session.ExtensionBaseClass):
                 results[name] = {key: result.group(key) for key in ("probe", "mmdd")}
         return results  # type: ignore[return-value]
 
+    @staticmethod
+    def autofill_manifest_probe_from_date_tag(
+        records: Iterable[Mapping[str, Any]],
+    ) -> list[dict[str, Any]]:
+        """
+        Auto-fill probe metadata from annotation names like
+        ``YYYYMMDD_<tag>_ShankN`` or ``YYYYMMDD_<tag>``.
+
+        Rows using this convention are kept only when the date in ``probe_id`` matches
+        the date in ``sorted_recording``. Rows with other probe IDs, or recordings with
+        no parseable date in ``sorted_recording``, are returned unchanged.
+        """
+        rec_date_pattern = re.compile(r"_([0-9]{4}-[0-9]{2}-[0-9]{2})_")
+        probe_pattern_full = re.compile(
+            r"^(?P<date>[0-9]{8})_(?P<tag>[^_]+)_Shank(?P<shank>[0-9]+)$",
+            flags=re.IGNORECASE,
+        )
+        probe_pattern_partial = re.compile(
+            r"^(?P<date>[0-9]{8})_(?P<tag>[^_]+)$",
+            flags=re.IGNORECASE,
+        )
+
+        processed_records: list[dict[str, Any]] = []
+        for record in records:
+            row = dict(record)
+            probe_id = str(row.get("probe_id", ""))
+            full_match = probe_pattern_full.match(probe_id)
+            partial_match = probe_pattern_partial.match(probe_id)
+
+            if full_match:
+                probe_match = full_match
+                probe_shank = int(full_match.group("shank")) - 1
+            elif partial_match:
+                probe_match = partial_match
+                probe_shank = 0
+            else:
+                processed_records.append(row)
+                continue
+
+            recording_match = rec_date_pattern.search(str(row["sorted_recording"]))
+            if recording_match is None:
+                processed_records.append(row)
+                continue
+
+            recording_date = datetime.datetime.strptime(
+                recording_match.group(1), "%Y-%m-%d"
+            ).strftime("%Y%m%d")
+            if recording_date != probe_match.group("date"):
+                continue
+
+            row["probe_name"] = probe_match.group("tag")
+            row["probe_shank"] = probe_shank
+            processed_records.append(row)
+
+        return processed_records
+
     def get_partial_manifest_records(
         self,
         neuroglancer_state_json_name: str | None = None,
@@ -664,7 +720,9 @@ class IBLDataConverterExtension(aind_session.ExtensionBaseClass):
                         ),
                     )
                     records.append(row)
-        return list(dataclasses.asdict(record) for record in records)
+        return self.autofill_manifest_probe_from_date_tag(
+            dataclasses.asdict(record) for record in records
+        )
 
     @property
     def csv_manifest_path(self) -> upath.UPath:
