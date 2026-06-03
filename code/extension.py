@@ -494,17 +494,29 @@ class IBLDataConverterExtension(aind_session.ExtensionBaseClass):
         annotation_format: str = "json"
 
     @staticmethod
+    def is_annotation_ignored(layer: Mapping[str, Any]) -> bool:
+        return layer.get("archived", False)
+
+    @staticmethod
     def get_mindscope_probe_day_from_ng_state(
         neuroglancer_state: NeuroglancerState,
     ) -> dict[str, dict[Literal["probe", "day"], str]]:
         # extract probe A-F and day 1-9, with optional separators
         pattern = r"(?P<probe>[A-F])[-_ ]*(?P<day>[1-9])"
         results = {}
-        for name in neuroglancer_state.annotation_names:
-            result = re.search(pattern, name)
-            if result is None:
-                continue
-            results[name] = {key: str(result.group(key)) for key in ("probe", "day")}
+        with contextlib.suppress(KeyError):
+            for layer in neuroglancer_state.content["layers"]:
+                if layer["type"] != "annotation":
+                    continue
+                if IBLDataConverterExtension.is_annotation_ignored(layer):
+                    continue
+                name = layer["name"]
+                result = re.search(pattern, name)
+                if result is None:
+                    continue
+                results[name] = {
+                    key: str(result.group(key)) for key in ("probe", "day")
+                }
         return results  # type: ignore[return-value]
 
     @staticmethod
@@ -516,11 +528,17 @@ class IBLDataConverterExtension(aind_session.ExtensionBaseClass):
         # optional suffixes after the 4-digit mmdd are ignored
         pattern = r"(?P<probe>[A-F])[-_ ]*(?P<mmdd>\d{4})(?!\d)"
         results = {}
-        for name in neuroglancer_state.annotation_names:
-            result = re.search(pattern, name)
-            if result is None:
-                continue
-            results[name] = {key: result.group(key) for key in ("probe", "mmdd")}
+        with contextlib.suppress(KeyError):
+            for layer in neuroglancer_state.content["layers"]:
+                if layer["type"] != "annotation":
+                    continue
+                if IBLDataConverterExtension.is_annotation_ignored(layer):
+                    continue
+                name = layer["name"]
+                result = re.search(pattern, name)
+                if result is None:
+                    continue
+                results[name] = {key: result.group(key) for key in ("probe", "mmdd")}
         return results  # type: ignore[return-value]
 
     def get_partial_manifest_records(
